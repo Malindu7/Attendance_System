@@ -1,0 +1,10 @@
+# Ignore student images
+   student_images/
+   images/
+   *.jpg
+   *.jpeg
+   *.png
+
+   # Ignore other sensitive files
+   *.db
+   config.env
