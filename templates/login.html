@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Login — KDU</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Outfit',sans-serif; min-height:100vh; background:linear-gradient(135deg,#0f0c29 0%,#1a1a6e 45%,#24243e 75%,#0d4b8c 100%); display:flex; align-items:center; justify-content:center; padding:20px; position:relative; overflow:hidden; }
+.o1,.o2 { position:fixed;border-radius:50%;filter:blur(80px);opacity:.3;pointer-events:none; }
+.o1 { width:500px;height:500px;background:radial-gradient(circle,#7c3aed,transparent);top:-150px;left:-150px; }
+.o2 { width:400px;height:400px;background:radial-gradient(circle,#0891b2,transparent);bottom:-100px;right:-100px; }
+.card { background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(24px);border-radius:24px;padding:44px 40px;width:100%;max-width:420px;position:relative;z-index:1;animation:up .5s ease both; }
+@keyframes up{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.icon { width:64px;height:64px;background:linear-gradient(135deg,#00e5ff,#7c3aed);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 24px;box-shadow:0 8px 32px rgba(0,229,255,.3); }
+h1 { text-align:center;color:white;font-size:24px;font-weight:700;margin-bottom:6px; }
+.sub { text-align:center;color:rgba(255,255,255,.55);font-size:14px;margin-bottom:28px; }
+.hint { background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.3);border-radius:12px;padding:12px 16px;margin-bottom:24px;font-size:13px;color:#00e5ff;font-family:monospace;line-height:1.9; }
+.err { background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.35);border-radius:12px;padding:11px 16px;margin-bottom:18px;font-size:13px;color:#fca5a5; }
+.fg { margin-bottom:18px; }
+label { display:block;color:rgba(255,255,255,.7);font-size:13px;font-weight:500;margin-bottom:8px; }
+input { width:100%;padding:14px 16px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:12px;color:white;font-family:'Outfit',sans-serif;font-size:15px;transition:all .25s;outline:none; }
+input::placeholder { color:rgba(255,255,255,.3); }
+input:focus { border-color:#00e5ff;background:rgba(255,255,255,.12);box-shadow:0 0 0 3px rgba(0,229,255,.15); }
+.btn-login { width:100%;padding:15px;background:linear-gradient(135deg,#00e5ff,#7c3aed);color:white;border:none;border-radius:12px;font-family:'Outfit',sans-serif;font-size:15px;font-weight:600;cursor:pointer;margin-top:8px;transition:all .25s;box-shadow:0 4px 24px rgba(0,229,255,.35); }
+.btn-login:hover { transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,229,255,.45); }
+.back { display:block;text-align:center;margin-top:20px;color:rgba(255,255,255,.45);text-decoration:none;font-size:14px;transition:color .2s; }
+.back:hover { color:#00e5ff; }
+</style>
+</head>
+<body>
+<div class="o1"></div><div class="o2"></div>
+<div class="card">
+  <div class="icon">🔐</div>
+  <h1>Admin Login</h1>
+  <p class="sub">Register new student faces and manage the system</p>
+  <div class="hint">📧 admin@kdu.ac.lk<br>🔑 Password: 123</div>
+  {% if error %}<div class="err">⚠️ {{ error }}</div>{% endif %}
+  <form method="POST">
+    <div class="fg"><label>Email Address</label><input type="email" name="email" placeholder="admin@kdu.ac.lk" required></div>
+    <div class="fg"><label>Password</label><input type="password" name="password" placeholder="Enter password" required></div>
+    <button type="submit" class="btn-login">Login to Admin Panel →</button>
+  </form>
+  <a href="/" class="back">← Back to Home</a>
+</div>
+</body>
+</html>

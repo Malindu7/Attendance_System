@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attendance System — KDU</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+:root { --accent:#00e5ff; --a2:#7c3aed; --green:#10b981; --glass:rgba(255,255,255,0.10); --gb:rgba(255,255,255,0.22); --muted:rgba(255,255,255,0.55); }
+body { font-family:'Outfit',sans-serif; min-height:100vh; background:linear-gradient(135deg,#0f0c29 0%,#1a1a6e 45%,#24243e 75%,#0d4b8c 100%); padding:40px 20px 60px; position:relative; overflow-x:hidden; }
+.orb { position:fixed; border-radius:50%; filter:blur(90px); pointer-events:none; z-index:0; animation:fo 9s ease-in-out infinite; }
+.o1 { width:560px;height:560px;background:radial-gradient(circle,#7c3aed,transparent);opacity:.32;top:-180px;left:-180px; }
+.o2 { width:480px;height:480px;background:radial-gradient(circle,#0891b2,transparent);opacity:.32;bottom:-140px;right:-140px;animation-delay:-4.5s; }
+.o3 { width:280px;height:280px;background:radial-gradient(circle,#10b981,transparent);opacity:.15;top:40%;left:42%;animation-delay:-2s; }
+@keyframes fo { 0%,100%{transform:translate(0,0)} 50%{transform:translate(25px,18px)} }
+.page { position:relative; z-index:1; max-width:1100px; margin:0 auto; }
+@keyframes up { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
+
+/* Header */
+.hdr { text-align:center; margin-bottom:44px; animation:up .5s ease both; }
+.badge { display:inline-flex; align-items:center; gap:8px; background:var(--glass); border:1px solid var(--gb); backdrop-filter:blur(14px); padding:7px 20px; border-radius:50px; font-size:12px; color:var(--accent); letter-spacing:.8px; font-weight:500; margin-bottom:18px; }
+.badge::before { content:''; width:7px;height:7px;background:var(--accent);border-radius:50%;animation:blink 1.8s infinite; }
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.hdr h1 { font-size:clamp(30px,5vw,52px); font-weight:800; color:white; line-height:1.15; margin-bottom:8px; }
+.hdr h1 em { color:var(--accent); font-style:normal; }
+.hdr .un { font-size:15px; color:var(--muted); font-weight:300; margin-bottom:4px; }
+.hdr .tg { font-size:13px; color:rgba(255,255,255,.38); }
+
+/* Section label */
+.slbl { font-size:12px; font-weight:600; letter-spacing:1.8px; text-transform:uppercase; color:rgba(255,255,255,.38); margin-bottom:14px; }
+
+/* Course tabs */
+.tabs { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:28px; animation:up .5s .1s ease both; }
+.tab { padding:10px 22px; border-radius:50px; background:var(--glass); border:1px solid var(--gb); backdrop-filter:blur(14px); color:var(--muted); font-size:14px; font-weight:500; cursor:pointer; transition:all .25s; user-select:none; }
+.tab:hover { color:white; background:rgba(255,255,255,.16); }
+.tab.active { background:linear-gradient(135deg,var(--accent),var(--a2)); border-color:transparent; color:white; box-shadow:0 4px 20px rgba(0,229,255,.35); }
+
+/* Subject panels */
+.panel { display:none; }
+.panel.active { display:block; animation:up .35s ease both; }
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:18px; margin-bottom:12px; }
+
+/* Subject card */
+.sc { background:var(--glass); border:1px solid var(--gb); backdrop-filter:blur(20px); border-radius:20px; padding:26px 24px; transition:transform .3s,background .3s,box-shadow .3s; }
+.sc:hover { transform:translateY(-5px); background:rgba(255,255,255,.15); box-shadow:0 16px 50px rgba(0,0,0,.35); }
+.sc .num { display:inline-flex; align-items:center; justify-content:center; width:36px;height:36px; border-radius:10px; background:linear-gradient(135deg,var(--accent),var(--a2)); font-size:14px; font-weight:700; color:white; margin-bottom:14px; box-shadow:0 4px 14px rgba(0,229,255,.3); }
+.sc .nm { font-size:17px; font-weight:600; color:white; margin-bottom:5px; }
+.sc .cd { font-size:12px; color:var(--muted); margin-bottom:20px; }
+.btn-mark { display:block; width:100%; padding:13px; background:linear-gradient(135deg,#10b981,#059669); color:white; border:none; border-radius:12px; font-family:'Outfit',sans-serif; font-size:14px; font-weight:600; text-decoration:none; text-align:center; cursor:pointer; transition:all .25s; box-shadow:0 4px 18px rgba(16,185,129,.38); }
+.btn-mark:hover { transform:translateY(-2px); box-shadow:0 8px 26px rgba(16,185,129,.48); }
+
+hr { border:none; border-top:1px solid rgba(255,255,255,.08); margin:36px 0; }
+
+/* Bottom actions */
+.bot { display:flex; gap:14px; flex-wrap:wrap; justify-content:center; animation:up .5s .3s ease both; }
+.bbt { display:inline-flex; align-items:center; gap:8px; padding:14px 28px; border-radius:14px; font-family:'Outfit',sans-serif; font-size:14px; font-weight:600; cursor:pointer; text-decoration:none; transition:all .25s; border:none; }
+.b-blue { background:linear-gradient(135deg,#2563eb,#1d4ed8); color:white; box-shadow:0 4px 20px rgba(37,99,235,.4); }
+.b-blue:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(37,99,235,.5); }
+.b-ghost { background:var(--glass); border:1px solid var(--gb); backdrop-filter:blur(14px); color:var(--muted); }
+.b-ghost:hover { color:white; background:rgba(255,255,255,.16); transform:translateY(-2px); }
+.b-purple { background:rgba(124,58,237,.2); border:1px solid rgba(124,58,237,.4); color:#c4b5fd; }
+.b-purple:hover { background:rgba(124,58,237,.3); transform:translateY(-2px); }
+</style>
+</head>
+<body>
+<div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
+<div class="page">
+
+  <div class="hdr">
+    <div class="badge">General Sir John Kotelawala Defence University</div>
+    <h1>Attendance <em>System</em></h1>
+    <!-- <p class="un">Faculty of Computing · CS31092 Digital Image Processing · Group 04</p> -->
+    <p class="tg">Face Verification</p> <!-- · ResNet-34 CNN · HOG Detection</p> -->
+  </div>
+
+  <p class="slbl">Select Your Course</p>
+  <div class="tabs">
+    {% for course in courses %}
+    <div class="tab {% if loop.first %}active{% endif %}"
+         onclick="showCourse('{{ loop.index }}', this)">
+      {{ ['📊','💻','⚙️','🛠️'][loop.index0] }} {{ course }}
+    </div>
+    {% endfor %}
+  </div>
+
+  {% for course, subjects in courses.items() %}
+  <div class="panel {% if loop.first %}active{% endif %}" id="panel-{{ loop.index }}">
+    <p class="slbl">Select Your Subject — {{ course }}</p>
+    <div class="grid">
+      {% for subject in subjects %}
+      <div class="sc">
+        <div class="num">{{ loop.index }}</div>
+        <div class="nm">{{ subject }}</div>
+        <div class="cd">Semester 7 · {{ course }}</div>
+        <a href="/verify?subject={{ subject | urlencode }}&course={{ course | urlencode }}"
+           class="btn-mark">▶&nbsp; Mark Attendance</a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+
+  <hr>
+  <div class="bot">
+    <a href="/dashboard" class="bbt b-blue">📊 View Attendance Dashboard</a>
+    <a href="/login"     class="bbt b-ghost">🔐 Admin Login · Register Student</a>
+    <a href="/preprocessing" class="bbt b-purple">🔬 Preprocessing Demo</a>
+  </div>
+
+</div>
+<script>
+function showCourse(id, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  el.classList.add('active');
+}
+</script>
+</body>
+</html>

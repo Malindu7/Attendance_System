@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attendance Dashboard — KDU</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+:root { --accent:#00e5ff; --a2:#7c3aed; --green:#10b981; --glass:rgba(255,255,255,.09); --gb:rgba(255,255,255,.17); --muted:rgba(255,255,255,.55); }
+body { font-family:'Outfit',sans-serif; min-height:100vh; background:linear-gradient(135deg,#0f0c29 0%,#1a1a6e 45%,#24243e 75%,#0d4b8c 100%); padding:36px 24px 60px; color:white; position:relative; }
+.o1,.o2 { position:fixed;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0; }
+.o1 { width:500px;height:500px;background:radial-gradient(circle,#7c3aed,transparent);opacity:.22;top:-150px;left:-150px; }
+.o2 { width:420px;height:420px;background:radial-gradient(circle,#0891b2,transparent);opacity:.22;bottom:-120px;right:-120px; }
+.wrap { position:relative;z-index:1;max-width:1150px;margin:0 auto; }
+@keyframes up { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+
+/* Topbar */
+.topbar { display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:26px;flex-wrap:wrap;gap:14px;animation:up .4s ease both; }
+.topbar h1 { font-size:26px;font-weight:800; }
+.topbar h1 em { color:var(--accent);font-style:normal; }
+.topbar p { font-size:13px;color:var(--muted);margin-top:4px; }
+.btn-home { display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:50px;background:var(--glass);border:1px solid var(--gb);backdrop-filter:blur(14px);color:var(--muted);font-size:13px;font-weight:500;text-decoration:none;transition:all .2s; }
+.btn-home:hover { color:white;background:rgba(255,255,255,.16); }
+
+/* Filter bar */
+.filter { background:var(--glass);border:1px solid var(--gb);backdrop-filter:blur(16px);border-radius:16px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;animation:up .4s .08s ease both; }
+.filter label { font-size:13px;color:var(--muted);white-space:nowrap; }
+select, input[type=date] { padding:10px 13px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.2);border-radius:10px;color:white;font-family:'Outfit',sans-serif;font-size:13px;outline:none;cursor:pointer;transition:all .2s;min-width:150px; }
+select:focus, input[type=date]:focus { border-color:var(--accent); }
+select option { background:#1a1a6e;color:white; }
+input[type=date]::-webkit-calendar-picker-indicator { filter:invert(1);opacity:.6;cursor:pointer; }
+.btn { padding:10px 18px;border-radius:10px;border:none;font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-block; }
+.btn-go { background:linear-gradient(135deg,var(--accent),var(--a2));color:white;box-shadow:0 4px 14px rgba(0,229,255,.3); }
+.btn-go:hover { transform:translateY(-1px); }
+.btn-cl { background:rgba(255,255,255,.08);color:var(--muted);border:1px solid var(--gb); }
+.btn-cl:hover { color:white; }
+
+/* Stats */
+.stats { display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:13px;margin-bottom:24px;animation:up .4s .14s ease both; }
+.stat { background:var(--glass);border:1px solid var(--gb);backdrop-filter:blur(14px);border-radius:16px;padding:16px 18px;text-align:center; }
+.stat .num { font-size:32px;font-weight:800;color:var(--accent);line-height:1; }
+.stat .num.g { color:var(--green); }
+.stat .lbl { font-size:12px;color:rgba(255,255,255,.42);margin-top:5px; }
+
+/* Notice */
+.notice { display:flex;align-items:center;gap:10px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.28);border-radius:12px;padding:11px 16px;margin-bottom:22px;font-size:13px;color:#6ee7b7;animation:up .4s .18s ease both; }
+
+/* Course section */
+.course-section { margin-bottom:32px;animation:up .4s .22s ease both; }
+.course-header { display:flex;align-items:center;gap:12px;margin-bottom:16px; }
+.course-icon { width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--a2));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;box-shadow:0 4px 16px rgba(0,229,255,.3); }
+.course-name { font-size:20px;font-weight:700; }
+.course-count { font-size:13px;color:var(--muted); }
+
+/* Subject block */
+.subject-block { background:var(--glass);border:1px solid var(--gb);backdrop-filter:blur(14px);border-radius:16px;margin-bottom:14px;overflow:hidden; }
+.subject-title { display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:rgba(0,0,0,.2);cursor:pointer;user-select:none; }
+.subject-title h3 { font-size:15px;font-weight:600; }
+.subj-meta { display:flex;align-items:center;gap:10px; }
+.count-badge { background:rgba(0,229,255,.15);border:1px solid rgba(0,229,255,.3);color:var(--accent);padding:3px 12px;border-radius:50px;font-size:12px;font-weight:600; }
+.count-badge.zero { background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.15);color:rgba(255,255,255,.4); }
+.toggle-icon { color:var(--muted);font-size:14px;transition:transform .25s; }
+.subject-title.open .toggle-icon { transform:rotate(180deg); }
+
+/* Table */
+.table-wrap { display:none; }
+.table-wrap.show { display:block; }
+table { width:100%;border-collapse:collapse; }
+th { padding:11px 18px;text-align:left;font-size:11px;color:rgba(255,255,255,.4);letter-spacing:1.2px;text-transform:uppercase;font-weight:500; }
+td { padding:12px 18px;font-size:14px;border-top:1px solid rgba(255,255,255,.07); }
+tr:hover td { background:rgba(255,255,255,.04); }
+.td-idx { color:rgba(255,255,255,.25);font-size:12px;font-family:monospace; }
+.td-name { font-weight:600;color:#34d399; }
+.td-date { color:rgba(255,255,255,.6);font-size:13px; }
+.td-time { color:rgba(255,255,255,.38);font-size:12px;font-family:monospace; }
+.badge-present { display:inline-flex;align-items:center;gap:5px;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);color:#6ee7b7;padding:3px 12px;border-radius:50px;font-size:12px;font-weight:600; }
+.badge-present::before { content:'';width:5px;height:5px;background:var(--green);border-radius:50%; }
+
+/* Empty state */
+.empty { text-align:center;padding:28px;color:rgba(255,255,255,.3);font-size:13px; }
+</style>
+</head>
+<body>
+<div class="o1"></div><div class="o2"></div>
+<div class="wrap">
+
+  <div class="topbar">
+    <div>
+      <h1>📊 Attendance <em>Dashboard</em></h1>
+      <p>General Sir John Kotelawala Defence University · Group 04</p>
+    </div>
+    <a href="/" class="btn-home">← Home</a>
+  </div>
+
+  <!-- Filter -->
+  <div class="filter">
+    <label>Filter:</label>
+    <form method="GET" style="display:flex;gap:10px;align-items:center;flex:1;flex-wrap:wrap;">
+      <select name="course">
+        <option value="">All Courses</option>
+        {% for c in courses %}<option value="{{ c }}" {% if sel_course==c %}selected{% endif %}>{{ c }}</option>{% endfor %}
+      </select>
+      <select name="subject">
+        <option value="">All Subjects</option>
+        {% for c, subs in courses.items() %}
+          {% for s in subs %}
+            <option value="{{ s }}" {% if sel_subject==s %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        {% endfor %}
+      </select>
+      <input type="date" name="date" value="{{ sel_date }}">
+      <button type="submit" class="btn btn-go">Filter</button>
+      <a href="/dashboard" class="btn btn-cl">Clear</a>
+    </form>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat"><div class="num">{{ total_present }}</div><div class="lbl">Present Today</div></div>
+    <div class="stat"><div class="num g">{{ total_present }}</div><div class="lbl">Unique Records</div></div>
+    <div class="stat"><div class="num" style="color:#c4b5fd;">{{ sel_date }}</div><div class="lbl">Selected Date</div></div>
+    {% if sel_course %}<div class="stat"><div class="num" style="font-size:15px;padding-top:6px;color:#00e5ff;">{{ sel_course }}</div><div class="lbl">Course Filter</div></div>{% endif %}
+  </div>
+
+  <!-- Rule notice -->
+  <div class="notice">
+    ✅ Each student appears <strong>once per subject per day</strong>. Attendance sheets are grouped by course, then by subject.
+  </div>
+
+  <!-- Grouped content -->
+  {% set icons = ['📊','💻','⚙️','🛠️'] %}
+  {% for course_name, subjects in grouped.items() %}
+  {% set ns = namespace(total=0) %}
+  {% for recs in subjects.values() %}{% set ns.total = ns.total + recs|length %}{% endfor %}
+  {% set total_in_course = ns.total %}
+  <div class="course-section">
+    <div class="course-header">
+      <div class="course-icon">{{ icons[loop.index0 % 4] }}</div>
+      <div>
+        <div class="course-name">{{ course_name }}</div>
+        <div class="course-count">{{ total_in_course }} student{{ 's' if total_in_course != 1 }} present across all subjects</div>
+      </div>
+    </div>
+
+    {% for subject, records in subjects.items() %}
+    <div class="subject-block">
+      <div class="subject-title" onclick="toggle(this)">
+        <h3>📚 {{ subject }}</h3>
+        <div class="subj-meta">
+          <span class="count-badge {% if not records %}zero{% endif %}">
+            {{ records | length }} present
+          </span>
+          <span class="toggle-icon">▼</span>
+        </div>
+      </div>
+      <div class="table-wrap {% if records %}show{% endif %}">
+        {% if records %}
+        <table>
+          <thead><tr><th>#</th><th>Student Name</th><th>Date</th><th>Time</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for r in records %}
+            <tr>
+              <td class="td-idx">{{ loop.index }}</td>
+              <td class="td-name">{{ r.name }}</td>
+              <td class="td-date">{{ r.timestamp.strftime('%d %b %Y') }}</td>
+              <td class="td-time">{{ r.timestamp.strftime('%H:%M:%S') }}</td>
+              <td><span class="badge-present">Present</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="empty">No attendance recorded for this subject on {{ sel_date }}</div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+
+</div>
+<script>
+function toggle(el) {
+  el.classList.toggle('open');
+  el.nextElementSibling.classList.toggle('show');
+}
+// Auto-open sections with data
+document.querySelectorAll('.subject-title').forEach(t => {
+  if (t.nextElementSibling.classList.contains('show')) t.classList.add('open');
+});
+</script>
+</body>
+</html>
