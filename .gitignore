@@ -1,10 +1,13 @@
-# Ignore student images
-   student_images/
-   images/
-   *.jpg
-   *.jpeg
-   *.png
+# Ignore folders
+images/
+Doc/
+static/
+venv/
+student_images/
 
-   # Ignore other sensitive files
-   *.db
-   config.env
+# Ignore sensitive files
+*.db
+config.env
+*.jpg
+*.jpeg
+*.png
