@@ -20,8 +20,31 @@ body { font-family:'Outfit',sans-serif; min-height:100vh; background:linear-grad
 .topbar h1 { font-size:26px;font-weight:800; }
 .topbar h1 em { color:var(--accent);font-style:normal; }
 .topbar p { font-size:13px;color:var(--muted);margin-top:4px; }
+.topbar-right { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
 .btn-home { display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:50px;background:var(--glass);border:1px solid var(--gb);backdrop-filter:blur(14px);color:var(--muted);font-size:13px;font-weight:500;text-decoration:none;transition:all .2s; }
 .btn-home:hover { color:white;background:rgba(255,255,255,.16); }
+
+/* ── Download Excel button ── */
+.btn-excel {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 20px;
+  border-radius:50px;
+  background:linear-gradient(135deg,#1b5e20,#2e7d32);
+  border:1px solid rgba(46,125,50,.5);
+  color:#fff;
+  font-family:'Outfit',sans-serif;
+  font-size:13px;
+  font-weight:600;
+  text-decoration:none;
+  cursor:pointer;
+  transition:all .2s;
+  box-shadow:0 4px 14px rgba(16,185,129,.25);
+  white-space:nowrap;
+}
+.btn-excel:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(16,185,129,.4); background:linear-gradient(135deg,#2e7d32,#388e3c); }
+.btn-excel svg { flex-shrink:0; }
 
 /* Filter bar */
 .filter { background:var(--glass);border:1px solid var(--gb);backdrop-filter:blur(16px);border-radius:16px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;animation:up .4s .08s ease both; }
@@ -85,12 +108,31 @@ tr:hover td { background:rgba(255,255,255,.04); }
 <div class="o1"></div><div class="o2"></div>
 <div class="wrap">
 
+  <!-- Topbar — title + HOME button + EXCEL button -->
   <div class="topbar">
     <div>
-      <h1>📊 Attendance <em>Dashboard</em></h1>
-      <p>General Sir John Kotelawala Defence University · Group 04</p>
+      <h1>Attendance <em>Dashboard</em></h1>
+      <p>General Sir John Kotelawala Defence University</p>
     </div>
-    <a href="/" class="btn-home">← Home</a>
+
+    <div class="topbar-right">
+
+      <!-- ✅ DOWNLOAD EXCEL BUTTON -->
+      <!-- passes current date/course/subject filters to the route -->
+      <a class="btn-excel"
+         href="/export_excel?date={{ sel_date }}{% if sel_course %}&course={{ sel_course }}{% endif %}{% if sel_subject %}&subject={{ sel_subject }}{% endif %}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Download Excel
+      </a>
+
+      <a href="/" class="btn-home">← Home</a>
+    </div>
   </div>
 
   <!-- Filter -->
@@ -121,11 +163,6 @@ tr:hover td { background:rgba(255,255,255,.04); }
     <div class="stat"><div class="num g">{{ total_present }}</div><div class="lbl">Unique Records</div></div>
     <div class="stat"><div class="num" style="color:#c4b5fd;">{{ sel_date }}</div><div class="lbl">Selected Date</div></div>
     {% if sel_course %}<div class="stat"><div class="num" style="font-size:15px;padding-top:6px;color:#00e5ff;">{{ sel_course }}</div><div class="lbl">Course Filter</div></div>{% endif %}
-  </div>
-
-  <!-- Rule notice -->
-  <div class="notice">
-    ✅ Each student appears <strong>once per subject per day</strong>. Attendance sheets are grouped by course, then by subject.
   </div>
 
   <!-- Grouped content -->
@@ -185,7 +222,6 @@ function toggle(el) {
   el.classList.toggle('open');
   el.nextElementSibling.classList.toggle('show');
 }
-// Auto-open sections with data
 document.querySelectorAll('.subject-title').forEach(t => {
   if (t.nextElementSibling.classList.contains('show')) t.classList.add('open');
 });

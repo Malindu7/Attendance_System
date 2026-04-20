@@ -1,0 +1,104 @@
+Sure! Here's how to push your InvoiceGuard project to GitHub step by step:
+
+---
+
+### Step 1 — Create a new repository on GitHub
+1. Go to **github.com** and log in
+2. Click the **"+"** button (top right) → **"New repository"**
+3. Name it `InvoiceGuard`
+4. Set it to **Public** or **Private**
+5. **DO NOT** check "Add README" or "Add .gitignore"
+6. Click **"Create repository"**
+
+---
+
+### Step 2 — Create a `.gitignore` file
+First, create this file in your project root so you don't upload unnecessary files:
+
+```
+# Virtual environment
+venv/
+
+# Processed data (large files)
+invoices_dataset/processed/
+
+# Trained model (large file)
+models/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Output images (optional - remove this if you want to include them)
+outputs/
+
+# OS files
+.DS_Store
+Thumbs.db
+```
+
+Create this as `.gitignore` in `D:\Lecture Notes\projects\InvoiceGuard\`
+
+---
+
+### Step 3 — Open terminal in VSCode and run these commands
+
+```bash
+# Make sure you're in the project folder
+cd "D:\Lecture Notes\projects\InvoiceGuard"
+
+# Initialize git
+git init
+
+# Add all files
+git add .
+
+# First commit
+git commit -m "Initial commit - InvoiceGuard invoice classification system"
+
+# Connect to your GitHub repo (replace YOUR_USERNAME with your GitHub username)
+git remote add origin https://github.com/YOUR_USERNAME/InvoiceGuard.git
+
+# Push to GitHub
+git branch -M main
+git push -u origin main
+```
+
+---
+
+### Step 4 — Enter your GitHub credentials
+When it asks for username and password, note that GitHub **no longer accepts your password** — you need a **Personal Access Token** instead:
+
+1. Go to GitHub → **Settings** → **Developer settings** → **Personal access tokens** → **Tokens (classic)**
+2. Click **"Generate new token"**
+3. Give it a name, set expiry, check **"repo"** scope
+4. Click **Generate** → **copy the token**
+5. Use this token as your password when git asks
+
+---
+
+### ✅ After pushing, your repo will look like this:
+```
+InvoiceGuard/
+├── invoices_dataset/     ← only raw images (no processed/)
+├── notebooks/
+├── app/
+├── invoiceguard_main.ipynb
+├── requirements.txt
+├── README.md
+└── .gitignore
+```
+
+---
+
+### 💡 For future changes
+Every time you update your code:
+```bash
+git add .
+git commit -m "describe what you changed"
+git push
+```

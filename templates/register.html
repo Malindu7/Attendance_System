@@ -89,12 +89,12 @@ select option { background:#1a1a6e;color:white; }
       <h2>Student Details</h2>
       <p class="desc">Fill in the details then click Capture while looking at the camera.</p>
 
-      <div class="notice">
+      <!-- <div class="notice">
         <strong>⚠️ Course Enrollment Rule</strong><br>
         Each student is enrolled in <strong>one course only</strong>.<br>
         They can attend any subject within that course.<br>
         To enroll in another course, register again with the new course selected.
-      </div>
+      </div> -->
 
       <form action="/capture_face" method="POST">
         <div class="fg">
@@ -114,7 +114,7 @@ select option { background:#1a1a6e;color:white; }
             {% endfor %}
           </select>
         </div>
-        <button type="submit" class="btn-capture">📷 Capture & Register</button>
+        <button type="submit" class="btn-capture">Capture & Register</button>
       </form>
 
       <div class="tips">

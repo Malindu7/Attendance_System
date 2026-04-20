@@ -1,10 +1,13 @@
-from flask import Flask, render_template, Response, request, redirect, url_for, session, flash
+from flask import Flask, render_template, Response, request, redirect, url_for, session, flash, send_file
 import cv2
 import face_recognition
 import numpy as np
 import os
 from datetime import datetime
 from pymongo import MongoClient
+from io import BytesIO
+import openpyxl
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
 app = Flask(__name__)
 app.secret_key = "kdu_group04_secret"
@@ -275,7 +278,7 @@ def gen_preprocessing_demo():
 
     def hdr_bar(w):
         t = np.zeros((36, w, 3), dtype=np.uint8); t[:] = (8, 12, 35)
-        cv2.putText(t, "11-STAGE PREPROCESSING PIPELINE  |  CS31092 Digital Image Processing  |  Group 04",
+        cv2.putText(t, "11-STAGE PREPROCESSING PIPELINE",
                     (8, 24), cv2.FONT_HERSHEY_SIMPLEX, 0.48, (80, 180, 255), 1)
         return t
 
@@ -339,7 +342,7 @@ def gen_preprocessing_demo():
         s1 = label(cv2.resize(frame_bgr, (TW, TH)), "1. Raw BGR Frame")
         # 2 BGR→RGB
         frame_rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
-        s2 = label(cv2.cvtColor(cv2.resize(frame_rgb, (TW, TH)), cv2.COLOR_RGB2BGR), "2. BGR → RGB")
+        s2 = label(cv2.cvtColor(cv2.resize(frame_rgb, (TW, TH)), cv2.COLOR_RGB2BGR), "2. BGR to RGB")
         # 3 CLAHE
         frame_clahe = apply_clahe(frame_rgb)
         s3 = label(cv2.cvtColor(cv2.resize(frame_clahe, (TW, TH)), cv2.COLOR_RGB2BGR), "3. CLAHE", (0, 220, 255))
@@ -623,5 +626,152 @@ def preprocessing_feed():
 
 
 # ============================================================
+
+# ============================================================
+# EXCEL EXPORT
+# /export_excel?date=YYYY-MM-DD&course=X&subject=Y
+# Same filters as dashboard — downloads a .xlsx file
+# ============================================================
+@app.route('/export_excel')
+def export_excel():
+    sel_course  = request.args.get('course',  '')
+    sel_subject = request.args.get('subject', '')
+    sel_date    = request.args.get('date', datetime.now().strftime('%Y-%m-%d'))
+
+    try:
+        date_obj = datetime.strptime(sel_date, '%Y-%m-%d')
+    except ValueError:
+        date_obj = datetime.now()
+
+    day_start = date_obj.replace(hour=0,  minute=0,  second=0,  microsecond=0)
+    day_end   = date_obj.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+    query = {"timestamp": {"$gte": day_start, "$lte": day_end}}
+    if sel_course:  query["course"]  = sel_course
+    if sel_subject: query["subject"] = sel_subject
+
+    raw_logs = list(attendance_col.find(query).sort("timestamp", 1))
+
+    # Deduplicate — same as dashboard
+    seen, unique = set(), []
+    for log in raw_logs:
+        key = (log['name'], log['subject'])
+        if key not in seen:
+            seen.add(key)
+            unique.append(log)
+
+    # ── Build workbook ──────────────────────────────────────
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Attendance"
+
+    # Styles
+    thin_side   = Side(style="thin", color="AABBD4")
+    cell_border = Border(left=thin_side, right=thin_side,
+                         top=thin_side,  bottom=thin_side)
+    center_al   = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    left_al     = Alignment(horizontal="left",   vertical="center", wrap_text=True)
+
+    navy_fill  = PatternFill("solid", fgColor="0B1F45")
+    blue_fill  = PatternFill("solid", fgColor="1565C0")
+    light_fill = PatternFill("solid", fgColor="DCE8F8")
+    white_fill = PatternFill("solid", fgColor="FFFFFF")
+    grey_fill  = PatternFill("solid", fgColor="F4F7FB")
+
+    # Row 1 — Main title
+    ws.merge_cells("A1:F1")
+    ws["A1"] = "FACE VERIFICATION ATTENDANCE SYSTEM"
+    ws["A1"].font      = Font(name="Calibri", bold=True, size=15, color="FFFFFF")
+    ws["A1"].fill      = navy_fill
+    ws["A1"].alignment = center_al
+    ws.row_dimensions[1].height = 26
+
+    # Row 2 — Subtitle
+    ws.merge_cells("A2:F2")
+    ws["A2"] = "General Sir John Kotelawala Defence University"
+    ws["A2"].font      = Font(name="Calibri", size=10, color="9EC5E8")
+    ws["A2"].fill      = navy_fill
+    ws["A2"].alignment = center_al
+    ws.row_dimensions[2].height = 16
+
+    # Row 3 — Filter info
+    filter_text = f"Date: {sel_date}"
+    if sel_course:  filter_text += f"   |   Course: {sel_course}"
+    if sel_subject: filter_text += f"   |   Subject: {sel_subject}"
+    filter_text += f"   |   Total Present: {len(unique)}"
+    ws.merge_cells("A3:F3")
+    ws["A3"] = filter_text
+    ws["A3"].font      = Font(name="Calibri", size=10, bold=True, color="0B1F45")
+    ws["A3"].fill      = light_fill
+    ws["A3"].alignment = center_al
+    ws.row_dimensions[3].height = 18
+
+    # Row 4 — Column headers
+    headers    = ["#",  "Student Name", "Course", "Subject", "Date",  "Time Marked"]
+    col_widths = [5,     26,             22,        26,        14,      14          ]
+    for i, (h, w) in enumerate(zip(headers, col_widths), start=1):
+        c = ws.cell(row=4, column=i, value=h)
+        c.font      = Font(name="Calibri", bold=True, size=11, color="FFFFFF")
+        c.fill      = blue_fill
+        c.alignment = center_al
+        c.border    = cell_border
+        ws.column_dimensions[c.column_letter].width = w
+    ws.row_dimensions[4].height = 20
+
+    # Data rows
+    for idx, record in enumerate(unique, start=1):
+        row = idx + 4
+        ts  = record.get("timestamp")
+        row_fill = white_fill if idx % 2 == 1 else grey_fill
+        row_data = [
+            idx,
+            record.get("name",    ""),
+            record.get("course",  ""),
+            record.get("subject", ""),
+            ts.strftime("%d %b %Y") if ts else "",
+            ts.strftime("%H:%M:%S") if ts else "",
+        ]
+        for col, val in enumerate(row_data, start=1):
+            c = ws.cell(row=row, column=col, value=val)
+            c.font      = Font(name="Calibri", size=11)
+            c.fill      = row_fill
+            c.alignment = center_al if col in [1, 5, 6] else left_al
+            c.border    = cell_border
+        ws.row_dimensions[row].height = 17
+
+    # Summary row
+    sr = len(unique) + 6
+    ws.merge_cells(f"A{sr}:E{sr}")
+    ws.cell(row=sr, column=1, value=f"Total Students Present: {len(unique)}")
+    ws.cell(row=sr, column=1).font      = Font(name="Calibri", bold=True, size=11, color="0B1F45")
+    ws.cell(row=sr, column=1).fill      = light_fill
+    ws.cell(row=sr, column=1).alignment = left_al
+    ws.cell(row=sr, column=1).border    = cell_border
+    ws.cell(row=sr, column=6,
+            value=f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+    ws.cell(row=sr, column=6).font      = Font(name="Calibri", size=10, italic=True, color="6B7A99")
+    ws.cell(row=sr, column=6).fill      = light_fill
+    ws.cell(row=sr, column=6).alignment = center_al
+    ws.cell(row=sr, column=6).border    = cell_border
+    ws.row_dimensions[sr].height = 18
+
+    ws.freeze_panes = "A5"  # freeze header rows
+
+    # Send as download
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    fname = f"Attendance_{sel_date}"
+    if sel_course:  fname += f"_{sel_course.replace(' ','_')}"
+    if sel_subject: fname += f"_{sel_subject.replace(' ','_')}"
+    fname += ".xlsx"
+
+    return send_file(output,
+                     mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                     as_attachment=True,
+                     download_name=fname)
+
+
 if __name__ == '__main__':
     app.run(debug=True, port=5001, use_reloader=False)
